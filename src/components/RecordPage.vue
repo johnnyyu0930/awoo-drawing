@@ -61,7 +61,6 @@
     Swal.fire({
       title: '清除',
       text: '您確定要清除中獎紀錄嗎?',
-      type: 'warning',
       showCancelButton: true,
       confirmButtonText: '清除',
       cancelButtonText: '取消',
