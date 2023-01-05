@@ -13,7 +13,7 @@
       </h1>
     </header>
 
-    <div class="w-[771px] mt-20">
+    <div class="w-[771px] mt-10">
       <div class="text-[#4E4C4C] text-4xl mb-7">
         得獎名單：共{{ winners.length }}位
       </div>
