@@ -1,7 +1,7 @@
 <template>
   <div class="bg">
-    <img src="../assets/leftRabbit.png" class="absolute left-10 bottom-30" />
-    <img src="../assets/rightRabbit.png" class="absolute right-10 bottom-30" />
+    <img src="../assets/left.png" class="absolute left-10 bottom-30" />
+    <img src="../assets/right.png" class="absolute right-10 bottom-30" />
   </div>
   <div class="relative z-10 h-screen">
     <header class="flex flex-col justify-center items-center gap-5 bg-bg">
