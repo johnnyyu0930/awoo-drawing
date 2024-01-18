@@ -8,8 +8,8 @@
       src="../assets/coin-bg.png"
       class="pt-[50px] pl-[68px] w-full h-full absolute bottom-0 left-0 z-0 overflow-hidden"
     />
-    <img src="../assets/leftRabbit.png" class="absolute left-10 bottom-30" />
-    <img src="../assets/rightRabbit.png" class="absolute right-10 bottom-30" />
+    <img src="../assets/left.png" class="absolute left-10 bottom-30" />
+    <img src="../assets/right.png" class="absolute right-10 bottom-30" />
   </div>
   <div class="relative z-10">
     <header class="flex flex-col justify-center items-center gap-5 bg-bg">
@@ -23,7 +23,7 @@
         >
           <img src="../assets/star-o.svg" alt="" class="w-[53px]" />
         </span>
-        揚眉兔氣大尾牙
+        歡樂 awoo 咚咚龍咚鏘
         <span
           class="w-[53px] h-[53px] border-2 border-solid border-red block rounded-full"
         >
