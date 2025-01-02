@@ -12,3 +12,5 @@
 5. 修改 `/package.json` 內的 vserion 升一版
 6. git commit
 7. 從fork出來的專案 提交 Pull requests 到 原專案
+8. 合併之後等Action 自動 deploy
+9. 如遇到 Action 失敗 請通知工程團隊
