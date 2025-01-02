@@ -7,28 +7,28 @@
     <header class="flex flex-col justify-center items-center gap-5 bg-bg">
       <img src="../assets/awooLogo.svg" alt="awoo logo" class="w-[86px]" />
       <h1
-        class="bg-[#FFD7D7] px-15 py-5 text-[56px] leading-[65px] rounded-[100px] shadow-awards font-bold min-w-[500px]"
+        class="bg-[#FFD7D7] px-15 py-2 text-[48px] leading-[48px] rounded-[100px] shadow-awards font-bold min-w-[400px]"
       >
         {{ awards }}
       </h1>
     </header>
 
-    <div class="w-[771px] mt-10">
-      <div class="text-[#4E4C4C] text-4xl mb-7">
+    <div class="w-[1000px] mt-10">
+      <div class="text-[#4E4C4C] text-3xl mb-7">
         得獎名單：共{{ winners.length }}位
       </div>
-      <div class="min-h-[400px]">
+      <div class="min-h-[300px]">
         <div
-          :class="`justify-center flex-wrap ${
-            winners.length < 3 ? 'flex gap-10' : 'grid grid-cols-3 gap-5'
+          :class="`flex items-center justify-center flex-wrap ${
+            winners.length < 5 ? 'flex gap-10' : 'grid grid-cols-5 gap-5'
           }`"
         >
           <span
             :class="`bg-secondary-80 ${
               winners.length < 3
-                ? 'text-[80px] leading-[95px] min-w-[448px] py-10'
-                : 'text-[40px] leading-[47px] min-w-[224px] py-5'
-            }  shadow-name rounded-[100px] px-[30px]`"
+                ? 'text-[60px] leading-[95px] min-w-[448px] py-10'
+                : 'text-[20px] leading-[32px] min-w-[200px] py-3'
+            }  shadow-name rounded-[100px] px-[2px]`"
             v-for="winner in winners"
             :key="winner"
             >{{ winner }}</span

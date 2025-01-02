@@ -12,27 +12,14 @@
     <img src="../assets/right.png" class="absolute right-10 bottom-30" />
   </div>
   <div class="relative z-10">
-    <header class="flex flex-col justify-center items-center gap-5 bg-bg">
+    <header class="flex flex-col justify-center items-center gap-5">
       <img src="../assets/awooLogo.svg" alt="awoo logo" class="w-[86px]" />
       <h1 class="font-extrabold text-6xl text-red tracking-[0.15em]">
         阿物科技前進高雄
       </h1>
-      <h2 class="text-red text-[50px] leading-[59px] flex items-center gap-5">
-        <span
-          class="w-[53px] h-[53px] border-2 border-solid border-red block rounded-full"
-        >
-          <img src="../assets/star-o.svg" alt="" class="w-[53px]" />
-        </span>
-        歡樂 awoo 咚咚龍咚鏘
-        <span
-          class="w-[53px] h-[53px] border-2 border-solid border-red block rounded-full"
-        >
-          <img src="../assets/star-o.svg" alt="" class="w-[53px]" />
-        </span>
-      </h2>
     </header>
 
-    <div class="mt-[150px] 3xl:mt-[120px] max-w-[552px]">
+    <div class="mt-[120px] 3xl:mt-[120px] max-w-[552px]">
       <img src="../assets/loading.webp" className="w-screen" />
       <div class="music-player">
         <audio
@@ -46,7 +33,6 @@
   </div>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <style></style>

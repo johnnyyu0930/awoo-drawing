@@ -2,7 +2,7 @@
   <div class="bg">
     <img
       src="../assets/bg-circle.png"
-      class="w-screen h-[95%] fixed bottom-0 left-0 z-0 2xl:bottom-[-5%] 3xl:bottom-[-16%]"
+      class="w-screen h-[80%] fixed bottom-0 left-0 z-0 2xl:bottom-[-5%] 3xl:bottom-[-16%]"
     />
     <img
       src="../assets/coin-bg.png"
@@ -12,31 +12,33 @@
     <img src="../assets/right.png" class="absolute right-10 bottom-30" />
 
     <button
-      class="absolute right-10 top-10 text-red text-xl font-bold"
+      class="absolute z-40 right-10 top-10 text-red text-xl font-bold"
       @click="$emit('goRecord')"
     >
       抽獎紀錄
     </button>
   </div>
-  <div class="relative h-screen z-10 flex flex-col justify-between">
-    <header
-      class="flex flex-col justify-center items-center pb-2"
-    >
-    <img src="../assets/title-v10.png" alt="" class="p-5 w-120 bg-bg rounded-3xl shadow-3xl mb-5" />
-      <h2 class="text-white text-[72px] leading-[59px] flex items-center gap-5 bg-red">
-      </h2>
-    </header>
 
-    <div class="w-[552px] pb-8">
+  <div
+    class="relative w-screen h-screen z-10 flex flex-col justify-center items-center gap-5"
+  >
+    <header class="flex flex-col justify-center items-center pb-2 absolute top-0">
+      <img
+        src="../assets/year-of-snake.png"
+        alt=""
+        class="mt-5 w-80 rounded-3xl shadow-3xl mb-5"
+      />
+    </header>
+    <div class="w-[650px] px-10 py-8 bg-[#c10d23ef] rounded-xl shadow-xl">
       <div class="grid grid-cols-[1fr,200px] gap-5">
         <input
-          class="bg-bg rounded-[100px] h-[51px] shadow-sm text-xl text-black px-6 outline-transparent outline-0"
+          class="bg-bg rounded-[100px] h-[51px] shadow-sm text-xl text-black px-6 outline-transparent outline-0 shadow-md"
           placeholder="輸入獎項"
           v-model="awards"
         />
         <input
           type="number"
-          class="bg-bg border-0 rounded-[100px] h-[51px] shadow-sm text-xl text-black px-6 outline-transparent outline-0 focus:(outline-0 border-0 ring-0)"
+          class="bg-bg border-0 rounded-[100px] shadow-md h-[51px] shadow-sm text-xl text-black px-6 outline-transparent outline-0 focus:(outline-0 border-0 ring-0)"
           placeholder="輸入人數"
           max="10"
           min="1"
@@ -48,9 +50,9 @@
           抽獎人數 {{ nameList.split('\n').filter((n) => n.trim()).length }} 人
         </div>
         <textarea
-          class="w-full mt-2 bg-bg border-0 rounded-[30px] shadow-sm text-xl text-black p-6 outline-transparent outline-0 focus:(outline-0 border-0 ring-0) scrollbar-thin scrollbar-thumb-red scrollbar-track-bg scrollbar-thumb-rounded-xl"
+          class="w-full mt-2 bg-bg border-0 rounded-[30px] shadow-md shadow-sm text-xl text-black p-3 outline-transparent outline-0 focus:(outline-0 border-0 ring-0) scrollbar-thin scrollbar-thumb-red scrollbar-track-bg scrollbar-thumb-rounded-xl"
           placeholder="請貼上抽獎者名字，以斷行分開"
-          rows="10"
+          rows="8"
           v-model="nameList"
         ></textarea>
         <button
