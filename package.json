@@ -3,6 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "type": "module",
+  "author": "awoo Front-End Team Johnny Yu",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
