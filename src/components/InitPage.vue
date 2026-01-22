@@ -24,7 +24,7 @@
   >
     <header class="flex flex-col justify-center items-center pb-2 absolute top-0">
       <img
-        src="../assets/year-of-snake.png"
+        src="../assets/2026尾牙_BN_ol.png"
         alt=""
         class="mt-5 w-80 rounded-3xl shadow-3xl mb-5"
       />
