@@ -24,9 +24,9 @@
   >
     <header class="flex flex-col justify-center items-center pb-2 absolute top-0">
       <img
-        src="../assets/2026尾牙_BN_ol.png"
+        src="../assets/2026_bn.png"
         alt=""
-        class="mt-5 w-80 rounded-3xl shadow-3xl mb-5"
+        class="mt-5 mb-5 rounded-3xl shadow-3xl h-auto w-[1100px] max-w-[90vw]"
       />
     </header>
     <div class="w-[650px] px-10 py-8 bg-[#c10d23ef] rounded-xl shadow-xl">
