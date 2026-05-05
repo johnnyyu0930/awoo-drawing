@@ -343,11 +343,66 @@
     white-space: nowrap;
   }
 
-  /* translate3d forces a GPU compositor layer so the animation keeps
-     running smoothly under iOS Low Power Mode and avoids jank from
-     repaint. Magnitudes are px (not vw/vh) because iOS Safari has
-     historically evaluated viewport units inside @keyframes
-     inconsistently. */
+  @keyframes pop-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.2) rotate(-20deg);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.15) rotate(6deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
+  }
+
+  @keyframes glow {
+    0% {
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.6),
+        0 12px 30px rgba(205, 0, 0, 0.35),
+        inset 0 -10px 20px rgba(0, 0, 0, 0.18),
+        inset 0 10px 20px rgba(255, 255, 255, 0.35);
+    }
+    100% {
+      box-shadow: 0 0 60px rgba(255, 215, 0, 1),
+        0 12px 40px rgba(205, 0, 0, 0.5),
+        inset 0 -10px 20px rgba(0, 0, 0, 0.18),
+        inset 0 10px 20px rgba(255, 255, 255, 0.35);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .deco {
+      max-height: 18vh;
+      opacity: 0.6;
+    }
+    .ball-name {
+      padding: 1px 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .deco {
+      display: none;
+    }
+  }
+</style>
+
+<!--
+  Global (non-scoped) keyframes. We reference these via inline
+  `:style="{ animationName: 'floatN' }"` from the template; if the
+  keyframes lived in <style scoped>, Vue would rewrite them to
+  `floatN-<hash>` and the inline `animation-name` (which Vue does NOT
+  rewrite at runtime) would no longer match — the result is balls that
+  render but never animate.
+
+  translate3d forces a GPU compositor layer (smooth on iOS Safari and
+  more resilient under Low Power Mode). Magnitudes are px because iOS
+  Safari has been inconsistent about evaluating vw/vh inside @keyframes.
+-->
+<style>
   @keyframes float1 {
     0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
     14%  { transform: translate3d(95px, -75px, 0) rotate(35deg) scale(1.04); }
@@ -406,51 +461,5 @@
     72%  { transform: translate3d(95px, 35px, 0) rotate(50deg) scale(0.95); }
     90%  { transform: translate3d(-80px, -85px, 0) rotate(-15deg) scale(1.02); }
     100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  }
-
-  @keyframes pop-in {
-    0% {
-      opacity: 0;
-      transform: scale(0.2) rotate(-20deg);
-    }
-    60% {
-      opacity: 1;
-      transform: scale(1.15) rotate(6deg);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1) rotate(0);
-    }
-  }
-
-  @keyframes glow {
-    0% {
-      box-shadow: 0 0 30px rgba(255, 215, 0, 0.6),
-        0 12px 30px rgba(205, 0, 0, 0.35),
-        inset 0 -10px 20px rgba(0, 0, 0, 0.18),
-        inset 0 10px 20px rgba(255, 255, 255, 0.35);
-    }
-    100% {
-      box-shadow: 0 0 60px rgba(255, 215, 0, 1),
-        0 12px 40px rgba(205, 0, 0, 0.5),
-        inset 0 -10px 20px rgba(0, 0, 0, 0.18),
-        inset 0 10px 20px rgba(255, 255, 255, 0.35);
-    }
-  }
-
-  @media (max-width: 768px) {
-    .deco {
-      max-height: 18vh;
-      opacity: 0.6;
-    }
-    .ball-name {
-      padding: 1px 8px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .deco {
-      display: none;
-    }
   }
 </style>
