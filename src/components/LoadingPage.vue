@@ -343,66 +343,69 @@
     white-space: nowrap;
   }
 
-  /* Chaotic flight paths — translate uses vw/vh so the spread scales
-     with viewport (small screens get smaller jumps automatically). */
+  /* translate3d forces a GPU compositor layer so the animation keeps
+     running smoothly under iOS Low Power Mode and avoids jank from
+     repaint. Magnitudes are px (not vw/vh) because iOS Safari has
+     historically evaluated viewport units inside @keyframes
+     inconsistently. */
   @keyframes float1 {
-    0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
-    14%  { transform: translate(7vw, -8vh) rotate(35deg) scale(1.04); }
-    28%  { transform: translate(-5vw, -11vh) rotate(-25deg) scale(0.96); }
-    42%  { transform: translate(9vw, 4vh) rotate(50deg) scale(1.06); }
-    57%  { transform: translate(-8vw, 9vh) rotate(-40deg) scale(0.94); }
-    71%  { transform: translate(5vw, -5vh) rotate(20deg) scale(1.02); }
-    85%  { transform: translate(-3vw, 10vh) rotate(-15deg) scale(0.98); }
-    100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    14%  { transform: translate3d(95px, -75px, 0) rotate(35deg) scale(1.04); }
+    28%  { transform: translate3d(-72px, -105px, 0) rotate(-25deg) scale(0.96); }
+    42%  { transform: translate3d(120px, 55px, 0) rotate(50deg) scale(1.06); }
+    57%  { transform: translate3d(-105px, 95px, 0) rotate(-40deg) scale(0.94); }
+    71%  { transform: translate3d(72px, -55px, 0) rotate(20deg) scale(1.02); }
+    85%  { transform: translate3d(-45px, 105px, 0) rotate(-15deg) scale(0.98); }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
   }
   @keyframes float2 {
-    0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
-    16%  { transform: translate(-6vw, 7vh) rotate(-30deg) scale(0.95); }
-    33%  { transform: translate(8vw, -9vh) rotate(45deg) scale(1.05); }
-    50%  { transform: translate(-9vw, -5vh) rotate(-50deg) scale(0.92); }
-    66%  { transform: translate(6vw, 10vh) rotate(25deg) scale(1.06); }
-    83%  { transform: translate(-4vw, -8vh) rotate(-20deg) scale(1); }
-    100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    16%  { transform: translate3d(-80px, 65px, 0) rotate(-30deg) scale(0.95); }
+    33%  { transform: translate3d(110px, -85px, 0) rotate(45deg) scale(1.05); }
+    50%  { transform: translate3d(-115px, -50px, 0) rotate(-50deg) scale(0.92); }
+    66%  { transform: translate3d(80px, 100px, 0) rotate(25deg) scale(1.06); }
+    83%  { transform: translate3d(-55px, -75px, 0) rotate(-20deg) scale(1); }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
   }
   @keyframes float3 {
-    0%   { transform: translate(0, 0) rotate(0deg); }
-    12%  { transform: translate(5vw, 8vh) rotate(20deg) scale(1.03); }
-    25%  { transform: translate(-7vw, 11vh) rotate(-30deg) scale(0.97); }
-    37%  { transform: translate(10vw, -4vh) rotate(40deg) scale(1.05); }
-    50%  { transform: translate(-6vw, -10vh) rotate(-50deg) scale(0.93); }
-    62%  { transform: translate(8vw, 6vh) rotate(25deg) scale(1.04); }
-    75%  { transform: translate(-9vw, -3vh) rotate(-35deg) scale(0.96); }
-    87%  { transform: translate(4vw, 9vh) rotate(15deg) scale(1.02); }
-    100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    12%  { transform: translate3d(70px, 80px, 0) rotate(20deg) scale(1.03); }
+    25%  { transform: translate3d(-90px, 110px, 0) rotate(-30deg) scale(0.97); }
+    37%  { transform: translate3d(125px, -45px, 0) rotate(40deg) scale(1.05); }
+    50%  { transform: translate3d(-80px, -100px, 0) rotate(-50deg) scale(0.93); }
+    62%  { transform: translate3d(105px, 65px, 0) rotate(25deg) scale(1.04); }
+    75%  { transform: translate3d(-115px, -35px, 0) rotate(-35deg) scale(0.96); }
+    87%  { transform: translate3d(55px, 90px, 0) rotate(15deg) scale(1.02); }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
   }
   @keyframes float4 {
-    0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
-    20%  { transform: translate(-7vw, -9vh) rotate(-40deg) scale(1.05); }
-    40%  { transform: translate(9vw, -3vh) rotate(30deg) scale(0.95); }
-    60%  { transform: translate(4vw, 11vh) rotate(-25deg) scale(1.07); }
-    80%  { transform: translate(-8vw, 5vh) rotate(50deg) scale(0.94); }
-    100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    20%  { transform: translate3d(-95px, -90px, 0) rotate(-40deg) scale(1.05); }
+    40%  { transform: translate3d(115px, -35px, 0) rotate(30deg) scale(0.95); }
+    60%  { transform: translate3d(60px, 110px, 0) rotate(-25deg) scale(1.07); }
+    80%  { transform: translate3d(-100px, 55px, 0) rotate(50deg) scale(0.94); }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
   }
   @keyframes float5 {
-    0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
-    11%  { transform: translate(6vw, -5vh) rotate(25deg) scale(1.04); }
-    22%  { transform: translate(-8vw, -7vh) rotate(-35deg) scale(0.94); }
-    33%  { transform: translate(10vw, 6vh) rotate(45deg) scale(1.06); }
-    44%  { transform: translate(-5vw, 11vh) rotate(-20deg) scale(0.97); }
-    55%  { transform: translate(7vw, -10vh) rotate(40deg) scale(1.05); }
-    66%  { transform: translate(-10vw, 4vh) rotate(-30deg) scale(0.93); }
-    77%  { transform: translate(3vw, 9vh) rotate(15deg) scale(1.02); }
-    88%  { transform: translate(-6vw, -3vh) rotate(-25deg) scale(0.99); }
-    100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    11%  { transform: translate3d(75px, -50px, 0) rotate(25deg) scale(1.04); }
+    22%  { transform: translate3d(-100px, -70px, 0) rotate(-35deg) scale(0.94); }
+    33%  { transform: translate3d(125px, 60px, 0) rotate(45deg) scale(1.06); }
+    44%  { transform: translate3d(-65px, 110px, 0) rotate(-20deg) scale(0.97); }
+    55%  { transform: translate3d(85px, -100px, 0) rotate(40deg) scale(1.05); }
+    66%  { transform: translate3d(-120px, 45px, 0) rotate(-30deg) scale(0.93); }
+    77%  { transform: translate3d(45px, 90px, 0) rotate(15deg) scale(1.02); }
+    88%  { transform: translate3d(-75px, -35px, 0) rotate(-25deg) scale(0.99); }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
   }
   @keyframes float6 {
-    0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
-    18%  { transform: translate(-9vw, 4vh) rotate(-45deg) scale(1.05); }
-    36%  { transform: translate(5vw, -10vh) rotate(35deg) scale(0.94); }
-    54%  { transform: translate(-3vw, 11vh) rotate(-30deg) scale(1.06); }
-    72%  { transform: translate(8vw, 3vh) rotate(50deg) scale(0.95); }
-    90%  { transform: translate(-6vw, -8vh) rotate(-15deg) scale(1.02); }
-    100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    18%  { transform: translate3d(-115px, 50px, 0) rotate(-45deg) scale(1.05); }
+    36%  { transform: translate3d(70px, -100px, 0) rotate(35deg) scale(0.94); }
+    54%  { transform: translate3d(-40px, 115px, 0) rotate(-30deg) scale(1.06); }
+    72%  { transform: translate3d(95px, 35px, 0) rotate(50deg) scale(0.95); }
+    90%  { transform: translate3d(-80px, -85px, 0) rotate(-15deg) scale(1.02); }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
   }
 
   @keyframes pop-in {
