@@ -7,7 +7,10 @@
   import { xor } from 'lodash-es';
   import Swal from 'sweetalert2';
   import { drawing } from './libs/libs';
+  import { loadAvatarMap } from './libs/avatar';
   import * as Lockr from 'lockr';
+
+  loadAvatarMap();
 
   const loadingPage = ref();
   const pageState = ref<'init' | 'loading' | 'result' | 'record'>('init');
@@ -63,9 +66,9 @@
       });
       return;
     }
+    winners.value = drawing(nameListArr.value, +headcount.value);
     pageState.value = 'loading';
     setTimeout(() => {
-      winners.value = drawing(nameListArr.value, +headcount.value);
       pageState.value = 'result';
     }, 5000);
   };
@@ -103,7 +106,12 @@
       @start="handleStart"
       @goRecord="handleGoRecord"
     />
-    <LoadingPage ref="loadingPage" v-else-if="pageState == 'loading'" />
+    <LoadingPage
+      ref="loadingPage"
+      v-else-if="pageState == 'loading'"
+      :nameList="nameListArr"
+      :winners="winners"
+    />
     <RecordPage v-else-if="pageState == 'record'" @back="handleBack" />
     <ResultPage :winners="winners" :awards="awards" @next="handleNext" v-else />
   </div>
