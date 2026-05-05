@@ -183,10 +183,9 @@
   .content {
     position: relative;
     z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    justify-items: center;
     width: 100%;
     height: 100%;
     padding: clamp(12px, 3vh, 32px) clamp(12px, 3vw, 32px);
@@ -199,7 +198,6 @@
     flex-direction: column;
     align-items: center;
     gap: clamp(6px, 1.2vh, 14px);
-    flex-shrink: 0;
   }
   .logo {
     width: clamp(48px, 8vh, 86px);
@@ -218,8 +216,10 @@
   .lottery-arena {
     position: relative;
     width: 100%;
-    flex: 1 1 auto;
-    min-height: 0;
+    height: 100%;
+    /* defensive — guarantees absolute-positioned balls have a non-zero
+       containing block even if a browser collapses the grid track. */
+    min-height: 240px;
     max-width: 1400px;
     overflow: visible;
   }
