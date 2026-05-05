@@ -53,6 +53,16 @@ Use WindiCSS utility classes, not Tailwind — they differ in some utilities and
 
 Merging to `master` triggers the GitHub Actions workflow (`.github/workflows/deploy.yml`) which builds and pushes `./dist` to `gh-pages`. The Vite `base` is set to `/awoo-drawing/`.
 
+## Slack avatars on the loading screen
+
+`LoadingPage.vue` renders each name as a "lottery ball" with an avatar. Avatars come from `public/slack-avatars.json` (a `{ "name": "image_url" }` map). Names not in the map fall back to a gradient + initials placeholder rendered by `src/libs/avatar.ts`.
+
+To refresh the map:
+- Local: `SLACK_BOT_TOKEN=xoxb-... pnpm sync-avatars` (token needs `users:read` scope).
+- Automated: the `Sync Slack avatars` workflow (`.github/workflows/sync-slack-avatars.yml`) runs weekly and on manual dispatch, requires the `SLACK_BOT_TOKEN` repo secret, and commits any change directly to `master` (which then redeploys via `deploy.yml`).
+
+The script keys each avatar by `real_name`, `display_name`, and Slack handle, so most name-list shapes match.
+
 ## Updating the title banner image
 
 Per the README workflow:
