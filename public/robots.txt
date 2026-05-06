@@ -1,0 +1,2 @@
+User-agent: *
+Disallow: /awoo-drawing/slack-avatars.json
