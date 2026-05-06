@@ -360,9 +360,10 @@
     letter-spacing: 0.06em;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
+    line-height: 1.25;
   }
 
   @keyframes drop-in {
