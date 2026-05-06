@@ -4,6 +4,7 @@
   import LoadingPage from './components/LoadingPage.vue';
   import ResultPage from './components/ResultPage.vue';
   import RecordPage from './components/RecordPage.vue';
+  import SettingsPage from './components/SettingsPage.vue';
   import { xor } from 'lodash-es';
   import Swal from 'sweetalert2';
   import { drawing } from './libs/libs';
@@ -13,7 +14,7 @@
   loadAvatarMap();
 
   const loadingPage = ref();
-  const pageState = ref<'init' | 'loading' | 'result' | 'record'>('init');
+  const pageState = ref<'init' | 'loading' | 'result' | 'record' | 'settings'>('init');
   const awards = ref('');
   const headcount = ref<number | ''>('');
   const nameList = ref<string>('');
@@ -92,6 +93,10 @@
     pageState.value = 'record';
   };
 
+  const handleGoSettings = () => {
+    pageState.value = 'settings';
+  };
+
   const handleBack = () => {
     pageState.value = 'init';
   };
@@ -106,6 +111,7 @@
       v-model:nameList="nameList"
       @start="handleStart"
       @goRecord="handleGoRecord"
+      @goSettings="handleGoSettings"
     />
     <LoadingPage
       ref="loadingPage"
@@ -115,6 +121,7 @@
       @done="handleLoadingDone"
     />
     <RecordPage v-else-if="pageState == 'record'" @back="handleBack" />
+    <SettingsPage v-else-if="pageState == 'settings'" @back="handleBack" />
     <ResultPage :winners="winners" :awards="awards" @next="handleNext" v-else />
   </div>
 </template>

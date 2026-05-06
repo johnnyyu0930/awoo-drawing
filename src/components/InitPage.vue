@@ -4,6 +4,7 @@
     <img src="../assets/left.png" class="deco deco-left" />
     <img src="../assets/right.png" class="deco deco-right" />
 
+    <button class="settings-btn" @click="$emit('goSettings')">頭像設定</button>
     <button class="record-btn" @click="$emit('goRecord')">抽獎紀錄</button>
 
     <div class="content">
@@ -61,6 +62,7 @@
     'update:nameList',
     'start',
     'goRecord',
+    'goSettings',
   ]);
   const awards = computed({
     get() {
@@ -126,6 +128,19 @@
     bottom: 4vh;
   }
 
+  .settings-btn {
+    position: absolute;
+    z-index: 40;
+    left: clamp(12px, 3vw, 40px);
+    top: clamp(12px, 3vh, 40px);
+    color: #cd0000;
+    font-size: clamp(14px, 2vh, 20px);
+    font-weight: 700;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+
   .record-btn {
     position: absolute;
     z-index: 40;
@@ -136,6 +151,7 @@
     font-weight: 700;
     background: transparent;
     border: 0;
+    cursor: pointer;
   }
 
   .content {
