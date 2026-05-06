@@ -224,7 +224,11 @@
 
   .winner-avatar {
     flex: 0 0 auto;
-    height: 72%;
+    /* viewport-based size — does NOT scale with card height, so the
+       avatar stays compact on tall (5×4 grid on 1440p) cards and the
+       name pill keeps enough room to render in a single horizontal line. */
+    height: clamp(40px, 6vh, 64px);
+    width: clamp(40px, 6vh, 64px);
     aspect-ratio: 1;
     border-radius: 50%;
     display: flex;
@@ -232,7 +236,7 @@
     justify-content: center;
     color: #fff;
     font-weight: 800;
-    font-size: clamp(11px, 1.8vh, 26px);
+    font-size: clamp(11px, 1.8vh, 22px);
     border: clamp(2px, 0.4vh, 4px) solid #fff;
     box-shadow: 0 0 16px rgba(255, 215, 0, 0.55),
       0 4px 12px rgba(205, 0, 0, 0.25),
@@ -248,27 +252,75 @@
     object-fit: cover;
   }
 
+  /* Per-tier avatar size — smaller tiers (fewer cards) get bigger avatars. */
+  .tier-2 .winner-avatar {
+    height: clamp(72px, 12vh, 120px);
+    width: clamp(72px, 12vh, 120px);
+    font-size: clamp(20px, 3.4vh, 36px);
+  }
+  .tier-3 .winner-avatar {
+    height: clamp(64px, 10vh, 96px);
+    width: clamp(64px, 10vh, 96px);
+    font-size: clamp(16px, 2.6vh, 28px);
+  }
+  .tier-4 .winner-avatar {
+    height: clamp(56px, 8vh, 80px);
+    width: clamp(56px, 8vh, 80px);
+    font-size: clamp(14px, 2.2vh, 24px);
+  }
+  .tier-5 .winner-avatar {
+    height: clamp(48px, 6.5vh, 72px);
+    width: clamp(48px, 6.5vh, 72px);
+    font-size: clamp(12px, 2vh, 22px);
+  }
+  .tier-6 .winner-avatar {
+    height: clamp(40px, 5.5vh, 60px);
+    width: clamp(40px, 5.5vh, 60px);
+    font-size: clamp(11px, 1.8vh, 18px);
+  }
+
   .winner-name {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-width: 0;
     background: #cd0000;
     color: #fff;
     border-radius: 999px;
-    padding: clamp(3px, 0.6vh, 8px) clamp(8px, 1.2vw, 16px);
-    font-size: clamp(11px, 1.7vh, 22px);
+    padding: clamp(4px, 0.8vh, 10px) clamp(10px, 1.6vw, 22px);
+    font-size: clamp(12px, 1.8vh, 22px);
     font-weight: 800;
     letter-spacing: 0.04em;
     box-shadow: inset -2px -3px 0 rgba(0, 0, 0, 0.25),
       0 4px 10px rgba(205, 0, 0, 0.3);
     white-space: normal;
-    word-break: break-word;
+    overflow-wrap: break-word;
     text-align: center;
-    line-height: 1.2;
-    /* Cap to ~3 lines so a very long name can't blow past the card */
+    line-height: 1.25;
+    /* line-clamp: 3 — with the vh-capped avatar the pill is wide
+       enough that most names fit on 1–2 lines; 3 is a safety cap
+       for runaway strings. */
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  /* Name font scales with tier — fewer cards per row → bigger text. */
+  .tier-2 .winner-name {
+    font-size: clamp(20px, 3.2vh, 34px);
+    padding: clamp(8px, 1.4vh, 14px) clamp(16px, 2.4vw, 30px);
+  }
+  .tier-3 .winner-name {
+    font-size: clamp(16px, 2.6vh, 28px);
+    padding: clamp(6px, 1.2vh, 12px) clamp(14px, 2vw, 24px);
+  }
+  .tier-4 .winner-name {
+    font-size: clamp(14px, 2.2vh, 24px);
+  }
+  .tier-5 .winner-name {
+    font-size: clamp(13px, 2vh, 22px);
+  }
+  .tier-6 .winner-name {
+    font-size: clamp(12px, 1.7vh, 18px);
   }
 
   /* Single-winner gets the dramatic stacked layout */
