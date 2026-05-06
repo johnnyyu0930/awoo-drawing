@@ -68,9 +68,10 @@
     }
     winners.value = drawing(nameListArr.value, +headcount.value);
     pageState.value = 'loading';
-    setTimeout(() => {
-      pageState.value = 'result';
-    }, 5000);
+  };
+
+  const handleLoadingDone = () => {
+    pageState.value = 'result';
   };
 
   const handleNext = () => {
@@ -111,6 +112,7 @@
       v-else-if="pageState == 'loading'"
       :nameList="nameListArr"
       :winners="winners"
+      @done="handleLoadingDone"
     />
     <RecordPage v-else-if="pageState == 'record'" @back="handleBack" />
     <ResultPage :winners="winners" :awards="awards" @next="handleNext" v-else />
