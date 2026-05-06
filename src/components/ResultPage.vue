@@ -270,9 +270,10 @@
     box-shadow: inset -2px -3px 0 rgba(0, 0, 0, 0.25),
       0 6px 14px rgba(205, 0, 0, 0.3);
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
+    line-height: 1.25;
   }
 
   .size-xl .winner-name {
