@@ -2,12 +2,15 @@
 // shaped like `{ "王小明": "https://...jpg", ... }` and matching names will
 // render with the real photo. Names not in the map fall back to a
 // deterministic gradient + initials avatar.
+//
+// A custom map uploaded via the settings page takes priority and is stored
+// in localStorage under STORAGE_KEY.
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+
+const STORAGE_KEY = 'avatarMapCustom';
 
 const avatarMap = ref<Record<string, string>>({});
-// Secondary index: Chinese/CJK prefix → url, for fuzzy lookup when the
-// lottery name list uses shorter names than the full Slack display name.
 const shortIndex: Record<string, string> = {};
 
 let mapPromise: Promise<void> | null = null;
@@ -18,20 +21,34 @@ const cjkPrefix = (s: string): string => {
   return m ? m[0] : '';
 };
 
+const applyData = (data: Record<string, string>) => {
+  for (const key of Object.keys(shortIndex)) delete shortIndex[key];
+  avatarMap.value = data;
+  for (const [k, v] of Object.entries(data)) {
+    const prefix = cjkPrefix(k);
+    if (prefix && !(prefix in shortIndex)) shortIndex[prefix] = v;
+  }
+};
+
 export const loadAvatarMap = (): Promise<void> => {
   if (mapPromise) return mapPromise;
   mapPromise = (async () => {
     try {
+      // Custom map from settings page takes priority over the public file.
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          applyData(parsed as Record<string, string>);
+          return;
+        }
+      }
       const url = `${import.meta.env.BASE_URL}slack-avatars.json`;
       const res = await fetch(url, { cache: 'no-cache' });
       if (res.ok) {
         const data = await res.json();
         if (data && typeof data === 'object') {
-          avatarMap.value = data as Record<string, string>;
-          for (const [k, v] of Object.entries(avatarMap.value)) {
-            const prefix = cjkPrefix(k);
-            if (prefix && !(prefix in shortIndex)) shortIndex[prefix] = v;
-          }
+          applyData(data as Record<string, string>);
         }
       }
     } catch {
@@ -40,6 +57,23 @@ export const loadAvatarMap = (): Promise<void> => {
   })();
   return mapPromise;
 };
+
+export const applyCustomAvatarMap = (data: Record<string, string>): void => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  applyData(data);
+};
+
+export const clearCustomAvatarMap = (): void => {
+  localStorage.removeItem(STORAGE_KEY);
+  applyData({});
+  mapPromise = null;
+  loadAvatarMap();
+};
+
+export const getAvatarSource = (): 'custom' | 'default' =>
+  localStorage.getItem(STORAGE_KEY) !== null ? 'custom' : 'default';
+
+export const avatarEntryCount = computed(() => Object.keys(avatarMap.value).length);
 
 export const getAvatarUrl = (name: string): string | undefined => {
   const t = name.trim();
