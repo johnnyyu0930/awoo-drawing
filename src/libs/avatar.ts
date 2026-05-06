@@ -3,8 +3,20 @@
 // render with the real photo. Names not in the map fall back to a
 // deterministic gradient + initials avatar.
 
-let avatarMap: Record<string, string> = {};
+import { ref } from 'vue';
+
+const avatarMap = ref<Record<string, string>>({});
+// Secondary index: Chinese/CJK prefix → url, for fuzzy lookup when the
+// lottery name list uses shorter names than the full Slack display name.
+const shortIndex: Record<string, string> = {};
+
 let mapPromise: Promise<void> | null = null;
+
+// Extract leading CJK characters (Chinese / Japanese kana/kanji) from a key.
+const cjkPrefix = (s: string): string => {
+  const m = s.match(/^[　-鿿＀-￯]+/);
+  return m ? m[0] : '';
+};
 
 export const loadAvatarMap = (): Promise<void> => {
   if (mapPromise) return mapPromise;
@@ -15,7 +27,11 @@ export const loadAvatarMap = (): Promise<void> => {
       if (res.ok) {
         const data = await res.json();
         if (data && typeof data === 'object') {
-          avatarMap = data as Record<string, string>;
+          avatarMap.value = data as Record<string, string>;
+          for (const [k, v] of Object.entries(avatarMap.value)) {
+            const prefix = cjkPrefix(k);
+            if (prefix && !(prefix in shortIndex)) shortIndex[prefix] = v;
+          }
         }
       }
     } catch {
@@ -26,7 +42,8 @@ export const loadAvatarMap = (): Promise<void> => {
 };
 
 export const getAvatarUrl = (name: string): string | undefined => {
-  return avatarMap[name.trim()];
+  const t = name.trim();
+  return avatarMap.value[t] ?? shortIndex[cjkPrefix(t)] ?? undefined;
 };
 
 const PALETTE: [string, string][] = [
