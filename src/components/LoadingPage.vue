@@ -41,7 +41,7 @@
             :key="winner"
             class="winner-card"
             :style="{
-              animationDelay: i * 0.12 + 's',
+              animationDelay: i * 0.6 + 's',
               '--card-w': winnerCardWidth,
             }"
           >
@@ -81,6 +81,7 @@
     winners: string[];
   }
   const props = defineProps<IProps>();
+  const emit = defineEmits<{ (e: 'done'): void }>();
 
   const phase = ref<'flying' | 'reveal'>('flying');
 
@@ -134,14 +135,35 @@
     }),
   );
 
-  let revealTimer: number | undefined;
+  let timers: number[] = [];
   onMounted(() => {
-    revealTimer = window.setTimeout(() => {
-      phase.value = 'reveal';
-    }, 3800);
+    // Stagger each winner reveal by STAGGER_MS so the audience sees them
+    // dropped one at a time. Total run time scales with winner count;
+    // App.vue waits for the `done` event instead of a fixed 5s timer.
+    const FLYING_MS = 3000;
+    const STAGGER_MS = 600;
+    const POP_MS = 800;
+    const TAIL_MS = 1100;
+
+    timers.push(
+      window.setTimeout(() => {
+        phase.value = 'reveal';
+      }, FLYING_MS),
+    );
+
+    const totalMs =
+      FLYING_MS +
+      Math.max(0, props.winners.length - 1) * STAGGER_MS +
+      POP_MS +
+      TAIL_MS;
+    timers.push(
+      window.setTimeout(() => {
+        emit('done');
+      }, totalMs),
+    );
   });
   onUnmounted(() => {
-    if (revealTimer) clearTimeout(revealTimer);
+    timers.forEach((t) => clearTimeout(t));
   });
 </script>
 
@@ -300,7 +322,7 @@
     align-items: center;
     gap: clamp(6px, 1.4vh, 14px);
     width: var(--card-w, 200px);
-    animation: pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    animation: drop-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
   }
 
   .winner-avatar {
@@ -343,18 +365,24 @@
     white-space: nowrap;
   }
 
-  @keyframes pop-in {
+  @keyframes drop-in {
     0% {
       opacity: 0;
-      transform: scale(0.2) rotate(-20deg);
+      transform: translate3d(0, -65vh, 0) scale(0.55) rotate(-12deg);
     }
-    60% {
+    55% {
       opacity: 1;
-      transform: scale(1.15) rotate(6deg);
+      transform: translate3d(0, 18px, 0) scale(1.12) rotate(6deg);
+    }
+    72% {
+      transform: translate3d(0, -10px, 0) scale(0.97) rotate(-3deg);
+    }
+    86% {
+      transform: translate3d(0, 4px, 0) scale(1.02) rotate(1deg);
     }
     100% {
       opacity: 1;
-      transform: scale(1) rotate(0);
+      transform: translate3d(0, 0, 0) scale(1) rotate(0);
     }
   }
 
