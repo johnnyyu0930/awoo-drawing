@@ -1,63 +1,59 @@
 <template>
-  <div class="page">
-    <img
-      src="../assets/bg-circle.png"
-      class="bg-circle"
-    />
+  <div class="page" ref="pageRef">
+    <img src="../assets/bg-circle.png" class="bg-circle" />
     <img src="../assets/left.png" class="deco deco-left" />
     <img src="../assets/right.png" class="deco deco-right" />
 
-    <div class="content">
-      <header class="loading-header">
-        <img src="../assets/awooLogo.svg" alt="awoo logo" class="logo" />
-        <h1 class="title">阿物科技前進高雄</h1>
-      </header>
+    <header class="loading-header">
+      <img src="../assets/awooLogo.svg" alt="awoo logo" class="logo" />
+      <h1 class="title">阿物科技前進高雄</h1>
+    </header>
 
+    <div
+      ref="arenaRef"
+      :class="['lottery-arena', phase === 'reveal' ? 'is-revealing' : '']"
+      :style="{ '--ball-size': ballSize + 'px' }"
+    >
       <div
-        :class="['lottery-arena', phase === 'reveal' ? 'is-revealing' : '']"
-        :style="{ '--ball-size': ballSize + 'px' }"
+        v-for="(meta, i) in ballMeta"
+        :key="meta.name"
+        :ref="(el) => setBallRef(el, i)"
+        class="lottery-ball"
       >
-        <div
-          v-for="ball in balls"
-          :key="ball.name"
-          class="lottery-ball"
-          :style="ball.style"
-        >
-          <div class="ball-avatar" :style="{ background: ball.gradient }">
-            <img
-              v-if="ball.avatarUrl"
-              :src="ball.avatarUrl"
-              :alt="ball.name"
-              @error="ball.avatarUrl = ''"
-            />
-            <span v-else>{{ ball.initials }}</span>
-          </div>
-          <span class="ball-name">{{ ball.name }}</span>
+        <div class="ball-avatar" :style="{ background: meta.gradient }">
+          <img
+            v-if="meta.avatarUrl"
+            :src="meta.avatarUrl"
+            :alt="meta.name"
+            @error="onAvatarError(i)"
+          />
+          <span v-else>{{ meta.initials }}</span>
         </div>
+        <span class="ball-name">{{ meta.name }}</span>
+      </div>
 
-        <div class="winner-reveal" v-if="phase === 'reveal'">
+      <div class="winner-reveal" v-if="phase === 'reveal'">
+        <div
+          v-for="(winner, i) in winners"
+          :key="winner"
+          class="winner-card"
+          :style="{
+            animationDelay: i * 0.6 + 's',
+            '--card-w': winnerCardWidth,
+          }"
+        >
           <div
-            v-for="(winner, i) in winners"
-            :key="winner"
-            class="winner-card"
-            :style="{
-              animationDelay: i * 0.6 + 's',
-              '--card-w': winnerCardWidth,
-            }"
+            class="winner-avatar"
+            :style="{ background: getAvatarGradient(winner) }"
           >
-            <div
-              class="winner-avatar"
-              :style="{ background: getAvatarGradient(winner) }"
-            >
-              <img
-                v-if="getAvatarUrl(winner)"
-                :src="getAvatarUrl(winner)"
-                :alt="winner"
-              />
-              <span v-else>{{ getInitials(winner) }}</span>
-            </div>
-            <span class="winner-name">{{ winner }}</span>
+            <img
+              v-if="getAvatarUrl(winner)"
+              :src="getAvatarUrl(winner)"
+              :alt="winner"
+            />
+            <span v-else>{{ getInitials(winner) }}</span>
           </div>
+          <span class="winner-name">{{ winner }}</span>
         </div>
       </div>
     </div>
@@ -69,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, onUnmounted, ref } from 'vue';
+  import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
   import {
     getAvatarGradient,
     getAvatarUrl,
@@ -84,11 +80,39 @@
   const emit = defineEmits<{ (e: 'done'): void }>();
 
   const phase = ref<'flying' | 'reveal'>('flying');
+  const pageRef = ref<HTMLElement | null>(null);
+  const arenaRef = ref<HTMLElement | null>(null);
 
-  const rand = (seed: number) => {
-    const x = Math.sin(seed * 9301 + 49297) * 233280;
-    return x - Math.floor(x);
+  // Plain (non-reactive) array of DOM nodes — we mutate transforms directly
+  // every frame to avoid Vue reactivity overhead at 60 fps × N balls.
+  const ballEls: (HTMLElement | null)[] = [];
+  const setBallRef = (el: unknown, i: number) => {
+    ballEls[i] = el as HTMLElement | null;
   };
+
+  // Avatar errors fall back to gradient + initials. We mutate the
+  // metadata object's avatarUrl (it IS reactive) so the <img> unmounts
+  // and the <span> with initials renders.
+  const ballMetaState = reactive(
+    props.nameList.map((name) => ({
+      name,
+      avatarUrl: getAvatarUrl(name) ?? '',
+      gradient: getAvatarGradient(name),
+      initials: getInitials(name),
+    })),
+  );
+  const ballMeta = computed(() => ballMetaState);
+  const onAvatarError = (i: number) => {
+    if (ballMetaState[i]) ballMetaState[i].avatarUrl = '';
+  };
+
+  const winnerCardWidth = computed(() => {
+    const n = props.winners.length;
+    if (n <= 1) return 'min(360px, 80vw)';
+    if (n <= 3) return 'min(260px, 40vw)';
+    if (n <= 6) return 'min(200px, 30vw)';
+    return 'min(160px, 22vw)';
+  });
 
   const ballSize = computed(() => {
     const n = props.nameList.length;
@@ -99,44 +123,157 @@
     return 44;
   });
 
-  const winnerCardWidth = computed(() => {
-    const n = props.winners.length;
-    if (n <= 1) return 'min(360px, 80vw)';
-    if (n <= 3) return 'min(260px, 40vw)';
-    if (n <= 6) return 'min(200px, 30vw)';
-    return 'min(160px, 22vw)';
-  });
+  const rand = (seed: number) => {
+    const x = Math.sin(seed * 9301 + 49297) * 233280;
+    return x - Math.floor(x);
+  };
 
-  const winnerSet = computed(() => new Set(props.winners));
+  // ---- Physics ----
+  // Plain array, not reactive. Each entry holds the live position /
+  // velocity / rotation of one ball; we read it every frame and write
+  // the result into ballEls[i].style.transform.
+  interface Ball {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    rot: number;
+    rotVel: number;
+  }
+  const balls: Ball[] = [];
 
-  const balls = computed(() =>
-    props.nameList.map((name, i) => {
-      const startX = rand(i * 1.3 + 0.1) * 84 + 3; // 3%–87%
-      const startY = rand(i * 2.7 + 0.5) * 76 + 5; // 5%–81%
-      const animIdx = (i % 6) + 1;
-      const duration = 4 + rand(i * 3.1 + 1.4) * 4; // 4–8s
-      const delay = -rand(i * 4.2 + 2.1) * 6; // -6–0s
-      const spinDir = i % 3 === 0 ? 'reverse' : 'normal';
-      return {
-        name,
-        avatarUrl: getAvatarUrl(name) ?? '',
-        gradient: getAvatarGradient(name),
-        initials: getInitials(name),
-        isWinner: winnerSet.value.has(name),
-        style: {
-          left: `${startX}%`,
-          top: `${startY}%`,
-          animationName: `float${animIdx}`,
-          animationDuration: `${duration}s`,
-          animationDelay: `${delay}s`,
-          animationDirection: spinDir,
-        },
-      };
-    }),
-  );
+  let rafId = 0;
+  let lastT = 0;
+
+  const initPhysics = () => {
+    if (!arenaRef.value) return;
+    const W = arenaRef.value.clientWidth;
+    const H = arenaRef.value.clientHeight;
+    const r = ballSize.value / 2;
+    const speed = 360; // px/sec
+    balls.length = 0;
+    for (let i = 0; i < props.nameList.length; i++) {
+      const angle = rand(i * 5.1 + 0.7) * Math.PI * 2;
+      const sp = speed * (0.7 + rand(i * 9.3 + 1.1) * 0.6); // 0.7×–1.3× base
+      balls.push({
+        x: rand(i * 1.3 + 0.1) * Math.max(0, W - 2 * r) + r,
+        y: rand(i * 2.7 + 0.5) * Math.max(0, H - 2 * r) + r,
+        vx: Math.cos(angle) * sp,
+        vy: Math.sin(angle) * sp,
+        rot: rand(i * 11.7) * 360,
+        rotVel: (rand(i * 13.9) - 0.5) * 240, // deg/sec
+      });
+    }
+  };
+
+  const step = (now: number) => {
+    if (phase.value === 'reveal' || !arenaRef.value) {
+      rafId = 0;
+      return;
+    }
+    const dt = lastT ? Math.min((now - lastT) / 1000, 0.05) : 0.016;
+    lastT = now;
+
+    const W = arenaRef.value.clientWidth;
+    const H = arenaRef.value.clientHeight;
+    const r = ballSize.value / 2;
+    const N = balls.length;
+
+    // Integrate + bounce off walls
+    for (let i = 0; i < N; i++) {
+      const b = balls[i];
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.rot += b.rotVel * dt;
+      if (b.x < r) {
+        b.x = r;
+        b.vx = Math.abs(b.vx);
+        b.rotVel = -b.rotVel;
+      } else if (b.x > W - r) {
+        b.x = W - r;
+        b.vx = -Math.abs(b.vx);
+        b.rotVel = -b.rotVel;
+      }
+      if (b.y < r) {
+        b.y = r;
+        b.vy = Math.abs(b.vy);
+        b.rotVel = -b.rotVel;
+      } else if (b.y > H - r) {
+        b.y = H - r;
+        b.vy = -Math.abs(b.vy);
+        b.rotVel = -b.rotVel;
+      }
+    }
+
+    // Pairwise elastic collisions (O(N²) — fine up to ~150 balls)
+    for (let i = 0; i < N; i++) {
+      const a = balls[i];
+      for (let j = i + 1; j < N; j++) {
+        const c = balls[j];
+        const dx = c.x - a.x;
+        const dy = c.y - a.y;
+        const distSq = dx * dx + dy * dy;
+        const minD = 2 * r;
+        if (distSq > 0.0001 && distSq < minD * minD) {
+          const dist = Math.sqrt(distSq);
+          const nx = dx / dist;
+          const ny = dy / dist;
+          // Separate so they don't sink into each other
+          const overlap = (minD - dist) / 2;
+          a.x -= nx * overlap;
+          a.y -= ny * overlap;
+          c.x += nx * overlap;
+          c.y += ny * overlap;
+          // Swap velocity along the collision normal (equal-mass elastic)
+          const va = a.vx * nx + a.vy * ny;
+          const vc = c.vx * nx + c.vy * ny;
+          const diff = vc - va;
+          a.vx += nx * diff;
+          a.vy += ny * diff;
+          c.vx -= nx * diff;
+          c.vy -= ny * diff;
+          // Add a touch of spin from the impact for visual flavor
+          a.rotVel += (rand(i * j + 1) - 0.5) * 80;
+          c.rotVel -= (rand(i * j + 2) - 0.5) * 80;
+        }
+      }
+    }
+
+    // Apply transforms imperatively
+    for (let i = 0; i < N; i++) {
+      const el = ballEls[i];
+      if (!el) continue;
+      const b = balls[i];
+      el.style.transform = `translate3d(${b.x - r}px, ${b.y - r}px, 0) rotate(${b.rot}deg)`;
+    }
+
+    rafId = requestAnimationFrame(step);
+  };
+
+  const onResize = () => {
+    if (!arenaRef.value) return;
+    const W = arenaRef.value.clientWidth;
+    const H = arenaRef.value.clientHeight;
+    const r = ballSize.value / 2;
+    // Clamp positions back inside the new viewport
+    for (const b of balls) {
+      if (b.x < r) b.x = r;
+      if (b.x > W - r) b.x = W - r;
+      if (b.y < r) b.y = r;
+      if (b.y > H - r) b.y = H - r;
+    }
+  };
 
   let timers: number[] = [];
   onMounted(() => {
+    // Defer physics init one frame so the arena has its measured size.
+    requestAnimationFrame(() => {
+      initPhysics();
+      lastT = 0;
+      rafId = requestAnimationFrame(step);
+    });
+    window.addEventListener('resize', onResize);
+
     // Stagger each winner reveal by STAGGER_MS so the audience sees them
     // dropped one at a time. Total run time scales with winner count;
     // App.vue waits for the `done` event instead of a fixed 5s timer.
@@ -150,7 +287,6 @@
         phase.value = 'reveal';
       }, FLYING_MS),
     );
-
     const totalMs =
       FLYING_MS +
       Math.max(0, props.winners.length - 1) * STAGGER_MS +
@@ -162,7 +298,10 @@
       }, totalMs),
     );
   });
+
   onUnmounted(() => {
+    if (rafId) cancelAnimationFrame(rafId);
+    window.removeEventListener('resize', onResize);
     timers.forEach((t) => clearTimeout(t));
   });
 </script>
@@ -202,28 +341,24 @@
     bottom: 5vh;
   }
 
-  .content {
-    position: relative;
-    z-index: 10;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    justify-items: center;
-    width: 100%;
-    height: 100%;
-    padding: clamp(12px, 3vh, 32px) clamp(12px, 3vw, 32px);
-    box-sizing: border-box;
-    gap: clamp(12px, 3vh, 28px);
-  }
-
+  /* Header floats above the bouncing balls. Translucent so balls
+     visible behind it instead of getting clipped. */
   .loading-header {
+    position: absolute;
+    top: clamp(12px, 3vh, 32px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: clamp(6px, 1.2vh, 14px);
+    pointer-events: none;
   }
   .logo {
     width: clamp(48px, 8vh, 86px);
     height: auto;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18));
   }
   .title {
     font-weight: 800;
@@ -233,31 +368,31 @@
     color: #cd0000;
     margin: 0;
     text-align: center;
+    text-shadow: 0 2px 8px rgba(255, 239, 239, 0.95),
+      0 4px 14px rgba(255, 239, 239, 0.7);
   }
 
+  /* The arena fills the entire page so balls can bounce edge-to-edge,
+     just like balls inside an actual lottery box. */
   .lottery-arena {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    /* defensive — guarantees absolute-positioned balls have a non-zero
-       containing block even if a browser collapses the grid track. */
-    min-height: 240px;
-    max-width: 1400px;
-    overflow: visible;
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    overflow: hidden;
   }
 
   .lottery-ball {
     position: absolute;
+    top: 0;
+    left: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    transform: translate(0, 0);
-    animation-iteration-count: infinite;
-    animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
-    will-change: transform, opacity;
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    /* No CSS animation — JS physics drives transform every frame. */
+    will-change: transform;
     pointer-events: none;
+    transform: translate3d(-100vw, -100vw, 0); /* off-screen until first tick */
   }
 
   .ball-avatar {
@@ -298,15 +433,18 @@
     text-overflow: ellipsis;
   }
 
+  /* On reveal, fade balls out at their last physics-set position. We
+     don't override transform here — JS keeps whatever it set last so
+     the ball doesn't snap to (0,0). */
   .lottery-arena.is-revealing .lottery-ball {
     opacity: 0;
-    transform: scale(0.4);
-    animation-play-state: paused;
+    transition: opacity 0.5s ease-out;
   }
 
   .winner-reveal {
     position: absolute;
     inset: 0;
+    z-index: 30;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -416,79 +554,5 @@
     .deco {
       display: none;
     }
-  }
-</style>
-
-<!--
-  Global (non-scoped) keyframes. We reference these via inline
-  `:style="{ animationName: 'floatN' }"` from the template; if the
-  keyframes lived in <style scoped>, Vue would rewrite them to
-  `floatN-<hash>` and the inline `animation-name` (which Vue does NOT
-  rewrite at runtime) would no longer match — the result is balls that
-  render but never animate.
-
-  translate3d forces a GPU compositor layer (smooth on iOS Safari and
-  more resilient under Low Power Mode). Magnitudes are px because iOS
-  Safari has been inconsistent about evaluating vw/vh inside @keyframes.
--->
-<style>
-  @keyframes float1 {
-    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-    14%  { transform: translate3d(95px, -75px, 0) rotate(35deg) scale(1.04); }
-    28%  { transform: translate3d(-72px, -105px, 0) rotate(-25deg) scale(0.96); }
-    42%  { transform: translate3d(120px, 55px, 0) rotate(50deg) scale(1.06); }
-    57%  { transform: translate3d(-105px, 95px, 0) rotate(-40deg) scale(0.94); }
-    71%  { transform: translate3d(72px, -55px, 0) rotate(20deg) scale(1.02); }
-    85%  { transform: translate3d(-45px, 105px, 0) rotate(-15deg) scale(0.98); }
-    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  }
-  @keyframes float2 {
-    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-    16%  { transform: translate3d(-80px, 65px, 0) rotate(-30deg) scale(0.95); }
-    33%  { transform: translate3d(110px, -85px, 0) rotate(45deg) scale(1.05); }
-    50%  { transform: translate3d(-115px, -50px, 0) rotate(-50deg) scale(0.92); }
-    66%  { transform: translate3d(80px, 100px, 0) rotate(25deg) scale(1.06); }
-    83%  { transform: translate3d(-55px, -75px, 0) rotate(-20deg) scale(1); }
-    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  }
-  @keyframes float3 {
-    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-    12%  { transform: translate3d(70px, 80px, 0) rotate(20deg) scale(1.03); }
-    25%  { transform: translate3d(-90px, 110px, 0) rotate(-30deg) scale(0.97); }
-    37%  { transform: translate3d(125px, -45px, 0) rotate(40deg) scale(1.05); }
-    50%  { transform: translate3d(-80px, -100px, 0) rotate(-50deg) scale(0.93); }
-    62%  { transform: translate3d(105px, 65px, 0) rotate(25deg) scale(1.04); }
-    75%  { transform: translate3d(-115px, -35px, 0) rotate(-35deg) scale(0.96); }
-    87%  { transform: translate3d(55px, 90px, 0) rotate(15deg) scale(1.02); }
-    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  }
-  @keyframes float4 {
-    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-    20%  { transform: translate3d(-95px, -90px, 0) rotate(-40deg) scale(1.05); }
-    40%  { transform: translate3d(115px, -35px, 0) rotate(30deg) scale(0.95); }
-    60%  { transform: translate3d(60px, 110px, 0) rotate(-25deg) scale(1.07); }
-    80%  { transform: translate3d(-100px, 55px, 0) rotate(50deg) scale(0.94); }
-    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  }
-  @keyframes float5 {
-    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-    11%  { transform: translate3d(75px, -50px, 0) rotate(25deg) scale(1.04); }
-    22%  { transform: translate3d(-100px, -70px, 0) rotate(-35deg) scale(0.94); }
-    33%  { transform: translate3d(125px, 60px, 0) rotate(45deg) scale(1.06); }
-    44%  { transform: translate3d(-65px, 110px, 0) rotate(-20deg) scale(0.97); }
-    55%  { transform: translate3d(85px, -100px, 0) rotate(40deg) scale(1.05); }
-    66%  { transform: translate3d(-120px, 45px, 0) rotate(-30deg) scale(0.93); }
-    77%  { transform: translate3d(45px, 90px, 0) rotate(15deg) scale(1.02); }
-    88%  { transform: translate3d(-75px, -35px, 0) rotate(-25deg) scale(0.99); }
-    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  }
-  @keyframes float6 {
-    0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-    18%  { transform: translate3d(-115px, 50px, 0) rotate(-45deg) scale(1.05); }
-    36%  { transform: translate3d(70px, -100px, 0) rotate(35deg) scale(0.94); }
-    54%  { transform: translate3d(-40px, 115px, 0) rotate(-30deg) scale(1.06); }
-    72%  { transform: translate3d(95px, 35px, 0) rotate(50deg) scale(0.95); }
-    90%  { transform: translate3d(-80px, -85px, 0) rotate(-15deg) scale(1.02); }
-    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
   }
 </style>
