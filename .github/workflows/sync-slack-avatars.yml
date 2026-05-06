@@ -2,9 +2,6 @@ name: Sync Slack avatars
 
 on:
   workflow_dispatch:
-  schedule:
-    # 每週一 09:00 (Asia/Taipei) = 01:00 UTC
-    - cron: '0 1 * * 1'
 
 permissions:
   contents: write
