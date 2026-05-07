@@ -12,8 +12,12 @@ const STORAGE_KEY = 'avatarMapCustom';
 
 const avatarMap = ref<Record<string, string>>({});
 const shortIndex: Record<string, string> = {};
+const normalizedIndex: Record<string, string> = {};
+const normalizedEntries: Array<{ normalized: string; url: string }> = [];
 
 let mapPromise: Promise<void> | null = null;
+
+const normalizeName = (s: string): string => s.replace(/[\s　]+/g, '').toLowerCase();
 
 // Extract leading CJK characters (Chinese / Japanese kana/kanji) from a key.
 const cjkPrefix = (s: string): string => {
@@ -23,10 +27,18 @@ const cjkPrefix = (s: string): string => {
 
 const applyData = (data: Record<string, string>) => {
   for (const key of Object.keys(shortIndex)) delete shortIndex[key];
+  for (const key of Object.keys(normalizedIndex)) delete normalizedIndex[key];
+  normalizedEntries.length = 0;
   avatarMap.value = data;
   for (const [k, v] of Object.entries(data)) {
     const prefix = cjkPrefix(k);
     if (prefix && !(prefix in shortIndex)) shortIndex[prefix] = v;
+
+    const normalized = normalizeName(k);
+    if (normalized && !(normalized in normalizedIndex)) {
+      normalizedIndex[normalized] = v;
+    }
+    if (normalized) normalizedEntries.push({ normalized, url: v });
   }
 };
 
@@ -77,7 +89,24 @@ export const avatarEntryCount = computed(() => Object.keys(avatarMap.value).leng
 
 export const getAvatarUrl = (name: string): string | undefined => {
   const t = name.trim();
-  return avatarMap.value[t] ?? shortIndex[cjkPrefix(t)] ?? undefined;
+  const normalized = normalizeName(t);
+  const fuzzyMatch =
+    normalized.length >= 3
+      ? normalizedEntries
+          .filter(
+            ({ normalized: candidate }) =>
+              candidate.includes(normalized) || normalized.includes(candidate),
+          )
+          .sort((a, b) => b.normalized.length - a.normalized.length)[0]?.url
+      : undefined;
+
+  return (
+    avatarMap.value[t] ??
+    normalizedIndex[normalized] ??
+    fuzzyMatch ??
+    shortIndex[cjkPrefix(t)] ??
+    undefined
+  );
 };
 
 const PALETTE: [string, string][] = [

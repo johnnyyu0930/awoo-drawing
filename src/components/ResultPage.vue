@@ -72,6 +72,7 @@
   const tierClass = computed(() => {
     const n = props.winners.length;
     if (n <= 1) return 'tier-1';
+    if (n === 2) return 'tier-2-feature';
     if (n <= 4) return 'tier-2';
     if (n <= 9) return 'tier-3';
     if (n <= 16) return 'tier-4';
@@ -199,6 +200,11 @@
     grid-template-columns: 1fr;
     place-items: center;
   }
+  .tier-2-feature {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    justify-items: center;
+  }
   .tier-2 { grid-template-columns: repeat(2, 1fr); }
   .tier-3 { grid-template-columns: repeat(3, 1fr); }
   .tier-4 { grid-template-columns: repeat(4, 1fr); }
@@ -299,6 +305,7 @@
        enough that most names fit on 1–2 lines; 3 is a safety cap
        for runaway strings. */
     display: -webkit-box;
+     line-clamp: 3;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -331,6 +338,17 @@
     width: min(440px, 82vw);
     height: auto;
     align-self: center;
+    overflow: visible;
+  }
+  .tier-2-feature .winner-card {
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(12px, 2.4vh, 22px);
+    padding: clamp(16px, 3vh, 30px);
+    width: min(100%, 420px);
+    min-height: min(440px, 56vh);
+    align-self: center;
+    overflow: visible;
   }
   .tier-1 .winner-avatar {
     height: clamp(120px, 26vh, 220px);
@@ -338,10 +356,38 @@
     aspect-ratio: 1;
     font-size: clamp(40px, 8vh, 72px);
   }
+  .tier-2-feature .winner-avatar {
+    height: clamp(108px, 20vh, 180px);
+    width: clamp(108px, 20vh, 180px);
+    aspect-ratio: 1;
+    font-size: clamp(34px, 6vh, 60px);
+  }
   .tier-1 .winner-name {
+    display: block;
     font-size: clamp(20px, 3.6vh, 36px);
     padding: clamp(8px, 1.4vh, 14px) clamp(20px, 3vw, 40px);
-    -webkit-line-clamp: 4;
+    line-height: 1.15;
+    width: min(100%, 360px);
+    box-sizing: border-box;
+    overflow: visible;
+    line-clamp: none;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: initial;
+  }
+  .tier-2-feature .winner-name {
+    flex: 0 0 auto;
+    align-self: center;
+    display: block;
+    font-size: clamp(20px, 3.2vh, 32px);
+    padding: clamp(8px, 1.4vh, 14px) clamp(20px, 3vw, 36px);
+    line-height: 1.15;
+    width: min(100%, 320px);
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    line-clamp: none;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: initial;
   }
 
   .next-btn {
@@ -410,6 +456,9 @@
       max-height: 12vh;
       opacity: 0.35;
     }
+    .tier-2-feature {
+      grid-template-columns: 1fr;
+    }
     .tier-3 { grid-template-columns: repeat(2, 1fr); }
     .tier-4 { grid-template-columns: repeat(2, 1fr); }
     .tier-5 { grid-template-columns: repeat(3, 1fr); }
@@ -419,6 +468,10 @@
   @media (max-width: 480px) {
     .deco {
       display: none;
+    }
+    .tier-2-feature .winner-card {
+      width: min(100%, 360px);
+      min-height: auto;
     }
     .tier-2 { grid-template-columns: 1fr; }
     .tier-3,

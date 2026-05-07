@@ -4,7 +4,7 @@
     <img src="../assets/left.png" class="deco deco-left" />
     <img src="../assets/right.png" class="deco deco-right" />
 
-    <header class="loading-header">
+    <header class="loading-header" ref="headerRef">
       <img src="../assets/awooLogo.svg" alt="awoo logo" class="logo" />
       <h1 class="title">阿物科技前進高雄</h1>
     </header>
@@ -29,17 +29,19 @@
           />
           <span v-else>{{ meta.initials }}</span>
         </div>
-        <span class="ball-name">{{ meta.name }}</span>
       </div>
 
-      <div class="winner-reveal" v-if="phase === 'reveal'">
+      <div
+        class="winner-reveal"
+        v-if="phase === 'reveal'"
+        :style="winnerRevealStyle"
+      >
         <div
           v-for="(winner, i) in winners"
           :key="winner"
           class="winner-card"
           :style="{
             animationDelay: i * 0.6 + 's',
-            '--card-w': winnerCardWidth,
           }"
         >
           <div
@@ -81,6 +83,7 @@
 
   const phase = ref<'flying' | 'reveal'>('flying');
   const pageRef = ref<HTMLElement | null>(null);
+  const headerRef = ref<HTMLElement | null>(null);
   const arenaRef = ref<HTMLElement | null>(null);
 
   // Plain (non-reactive) array of DOM nodes — we mutate transforms directly
@@ -106,12 +109,123 @@
     if (ballMetaState[i]) ballMetaState[i].avatarUrl = '';
   };
 
-  const winnerCardWidth = computed(() => {
+  const POP_SOUND_SRC = `${import.meta.env.BASE_URL}pop.wav`;
+  const activePopPlayers = new Set<HTMLAudioElement>();
+
+  const playPopSound = () => {
+    const player = new Audio(POP_SOUND_SRC);
+    const cleanup = () => {
+      activePopPlayers.delete(player);
+      player.removeEventListener('ended', cleanup);
+      player.removeEventListener('error', cleanup);
+    };
+
+    activePopPlayers.add(player);
+    player.addEventListener('ended', cleanup);
+    player.addEventListener('error', cleanup);
+    void player.play().catch(() => {
+      cleanup();
+    });
+  };
+
+  const winnerRevealStyle = computed<Record<string, string>>(() => {
     const n = props.winners.length;
-    if (n <= 1) return 'min(360px, 80vw)';
-    if (n <= 3) return 'min(260px, 40vw)';
-    if (n <= 6) return 'min(200px, 30vw)';
-    return 'min(160px, 22vw)';
+    const winnerRevealTop = `${Math.ceil(headerClearance.value)}px`;
+    if (n <= 1) {
+      return {
+        '--winner-reveal-top': winnerRevealTop,
+        '--card-w': 'min(360px, 80vw)',
+        '--winner-reveal-gap': 'clamp(12px, 3vw, 32px)',
+        '--winner-reveal-pad-x': 'clamp(12px, 3vw, 40px)',
+        '--winner-reveal-pad-y': 'clamp(8px, 2vh, 20px)',
+        '--winner-card-gap': 'clamp(6px, 1.4vh, 14px)',
+        '--winner-avatar-size': 'clamp(80px, 16vh, 160px)',
+        '--winner-avatar-font-size': 'clamp(28px, 5vh, 56px)',
+        '--winner-avatar-border': '5px',
+        '--winner-name-size': 'clamp(16px, 2.6vh, 28px)',
+        '--winner-name-px': '22px',
+        '--winner-name-py': '6px',
+      };
+    }
+    if (n <= 3) {
+      return {
+        '--winner-reveal-top': winnerRevealTop,
+        '--card-w': 'min(260px, 40vw)',
+        '--winner-reveal-gap': 'clamp(12px, 2.6vw, 28px)',
+        '--winner-reveal-pad-x': 'clamp(12px, 3vw, 36px)',
+        '--winner-reveal-pad-y': 'clamp(8px, 2vh, 18px)',
+        '--winner-card-gap': 'clamp(6px, 1.3vh, 14px)',
+        '--winner-avatar-size': 'clamp(76px, 15vh, 140px)',
+        '--winner-avatar-font-size': 'clamp(24px, 4.4vh, 48px)',
+        '--winner-avatar-border': '5px',
+        '--winner-name-size': 'clamp(15px, 2.4vh, 24px)',
+        '--winner-name-px': '18px',
+        '--winner-name-py': '6px',
+      };
+    }
+    if (n <= 6) {
+      return {
+        '--winner-reveal-top': winnerRevealTop,
+        '--card-w': 'min(200px, 30vw)',
+        '--winner-reveal-gap': 'clamp(10px, 2vw, 24px)',
+        '--winner-reveal-pad-x': 'clamp(10px, 2.4vw, 28px)',
+        '--winner-reveal-pad-y': 'clamp(8px, 1.6vh, 16px)',
+        '--winner-card-gap': 'clamp(6px, 1vh, 12px)',
+        '--winner-avatar-size': 'clamp(72px, 13vh, 120px)',
+        '--winner-avatar-font-size': 'clamp(22px, 3.8vh, 42px)',
+        '--winner-avatar-border': '4px',
+        '--winner-name-size': 'clamp(14px, 2.2vh, 22px)',
+        '--winner-name-px': '16px',
+        '--winner-name-py': '5px',
+      };
+    }
+    if (n <= 12) {
+      return {
+        '--winner-reveal-top': winnerRevealTop,
+        '--card-w': 'min(150px, 20vw)',
+        '--winner-reveal-gap': 'clamp(8px, 1.8vw, 18px)',
+        '--winner-reveal-pad-x': 'clamp(8px, 2vw, 24px)',
+        '--winner-reveal-pad-y': 'clamp(6px, 1.4vh, 14px)',
+        '--winner-card-gap': 'clamp(5px, 0.9vh, 10px)',
+        '--winner-avatar-size': 'clamp(58px, 10.5vh, 96px)',
+        '--winner-avatar-font-size': 'clamp(18px, 3.2vh, 32px)',
+        '--winner-avatar-border': '4px',
+        '--winner-name-size': 'clamp(12px, 1.9vh, 18px)',
+        '--winner-name-px': '12px',
+        '--winner-name-py': '4px',
+      };
+    }
+    if (n <= 20) {
+      return {
+        '--winner-reveal-top': winnerRevealTop,
+        '--card-w': 'min(112px, 18vw)',
+        '--winner-reveal-gap': 'clamp(6px, 1.2vw, 12px)',
+        '--winner-reveal-pad-x': 'clamp(6px, 1.4vw, 16px)',
+        '--winner-reveal-pad-y': 'clamp(4px, 1vh, 10px)',
+        '--winner-card-gap': 'clamp(4px, 0.7vh, 8px)',
+        '--winner-avatar-size': 'clamp(44px, 7.4vh, 72px)',
+        '--winner-avatar-font-size': 'clamp(14px, 2.4vh, 24px)',
+        '--winner-avatar-border': '3px',
+        '--winner-name-size': 'clamp(10px, 1.6vh, 14px)',
+        '--winner-name-px': '8px',
+        '--winner-name-py': '3px',
+      };
+    }
+
+    return {
+      '--winner-reveal-top': winnerRevealTop,
+      '--card-w': 'min(96px, 15vw)',
+      '--winner-reveal-gap': 'clamp(4px, 1vw, 10px)',
+      '--winner-reveal-pad-x': 'clamp(6px, 1.2vw, 14px)',
+      '--winner-reveal-pad-y': 'clamp(4px, 0.8vh, 8px)',
+      '--winner-card-gap': 'clamp(3px, 0.6vh, 6px)',
+      '--winner-avatar-size': 'clamp(40px, 6.5vh, 60px)',
+      '--winner-avatar-font-size': 'clamp(12px, 2vh, 20px)',
+      '--winner-avatar-border': '3px',
+      '--winner-name-size': 'clamp(9px, 1.4vh, 12px)',
+      '--winner-name-px': '6px',
+      '--winner-name-py': '3px',
+    };
   });
 
   const ballSize = computed(() => {
@@ -145,23 +259,58 @@
   let rafId = 0;
   let lastT = 0;
 
+  const HEADER_CLEARANCE_GAP = 12;
+  const headerClearance = ref(0);
+
+  const getHeaderBottom = () => {
+    if (!pageRef.value || !headerRef.value) return 0;
+
+    const pageRect = pageRef.value.getBoundingClientRect();
+    const headerRect = headerRef.value.getBoundingClientRect();
+    return Math.max(0, headerRect.bottom - pageRect.top);
+  };
+
+  const updateHeaderClearance = () => {
+    headerClearance.value = getHeaderBottom() + HEADER_CLEARANCE_GAP;
+  };
+
+  const getBallTopBoundary = (r: number) => {
+    if (!pageRef.value || !headerRef.value) return r;
+
+    const headerBottom = getHeaderBottom();
+    const sampleBallEl = ballEls.find(
+      (el): el is HTMLElement => el instanceof HTMLElement,
+    );
+    const ballWidth = sampleBallEl?.offsetWidth ?? ballSize.value;
+    const ballHeight = sampleBallEl?.offsetHeight ?? ballSize.value;
+    const rotatedExtent = Math.hypot(ballWidth, ballHeight) / 2;
+    const centerOffset = ballHeight / 2 - r;
+
+    return Math.max(
+      r,
+      headerBottom + HEADER_CLEARANCE_GAP + rotatedExtent - centerOffset,
+    );
+  };
+
   const initPhysics = () => {
     if (!arenaRef.value) return;
     const W = arenaRef.value.clientWidth;
     const H = arenaRef.value.clientHeight;
     const r = ballSize.value / 2;
-    const speed = 360; // px/sec
+    const minY = getBallTopBoundary(r);
+    const maxY = Math.max(minY, H - r);
+    const speed = 3600; // px/sec — 20× a calmer 360 baseline, real lottery-machine chaos
     balls.length = 0;
     for (let i = 0; i < props.nameList.length; i++) {
       const angle = rand(i * 5.1 + 0.7) * Math.PI * 2;
       const sp = speed * (0.7 + rand(i * 9.3 + 1.1) * 0.6); // 0.7×–1.3× base
       balls.push({
         x: rand(i * 1.3 + 0.1) * Math.max(0, W - 2 * r) + r,
-        y: rand(i * 2.7 + 0.5) * Math.max(0, H - 2 * r) + r,
+        y: rand(i * 2.7 + 0.5) * Math.max(0, maxY - minY) + minY,
         vx: Math.cos(angle) * sp,
         vy: Math.sin(angle) * sp,
         rot: rand(i * 11.7) * 360,
-        rotVel: (rand(i * 13.9) - 0.5) * 240, // deg/sec
+        rotVel: (rand(i * 13.9) - 0.5) * 720, // deg/sec — also bumped for the speed
       });
     }
   };
@@ -177,64 +326,73 @@
     const W = arenaRef.value.clientWidth;
     const H = arenaRef.value.clientHeight;
     const r = ballSize.value / 2;
+    const minY = getBallTopBoundary(r);
+    const maxY = Math.max(minY, H - r);
     const N = balls.length;
 
-    // Integrate + bounce off walls
-    for (let i = 0; i < N; i++) {
-      const b = balls[i];
-      b.x += b.vx * dt;
-      b.y += b.vy * dt;
-      b.rot += b.rotVel * dt;
-      if (b.x < r) {
-        b.x = r;
-        b.vx = Math.abs(b.vx);
-        b.rotVel = -b.rotVel;
-      } else if (b.x > W - r) {
-        b.x = W - r;
-        b.vx = -Math.abs(b.vx);
-        b.rotVel = -b.rotVel;
+    // Substep the physics so a 7200 px/s ball can't tunnel through a
+    // 2r-wide neighbor between frames. With 8 substeps each substep
+    // moves at most ~15 px, well under one ball radius.
+    const SUBSTEPS = 8;
+    const sub = dt / SUBSTEPS;
+    for (let s = 0; s < SUBSTEPS; s++) {
+      // Integrate + bounce off walls
+      for (let i = 0; i < N; i++) {
+        const b = balls[i];
+        b.x += b.vx * sub;
+        b.y += b.vy * sub;
+        b.rot += b.rotVel * sub;
+        if (b.x < r) {
+          b.x = r;
+          b.vx = Math.abs(b.vx);
+          b.rotVel = -b.rotVel;
+        } else if (b.x > W - r) {
+          b.x = W - r;
+          b.vx = -Math.abs(b.vx);
+          b.rotVel = -b.rotVel;
+        }
+        if (b.y < minY) {
+          b.y = minY;
+          b.vy = Math.abs(b.vy);
+          b.rotVel = -b.rotVel;
+        } else if (b.y > maxY) {
+          b.y = maxY;
+          b.vy = -Math.abs(b.vy);
+          b.rotVel = -b.rotVel;
+        }
       }
-      if (b.y < r) {
-        b.y = r;
-        b.vy = Math.abs(b.vy);
-        b.rotVel = -b.rotVel;
-      } else if (b.y > H - r) {
-        b.y = H - r;
-        b.vy = -Math.abs(b.vy);
-        b.rotVel = -b.rotVel;
-      }
-    }
 
-    // Pairwise elastic collisions (O(N²) — fine up to ~150 balls)
-    for (let i = 0; i < N; i++) {
-      const a = balls[i];
-      for (let j = i + 1; j < N; j++) {
-        const c = balls[j];
-        const dx = c.x - a.x;
-        const dy = c.y - a.y;
-        const distSq = dx * dx + dy * dy;
-        const minD = 2 * r;
-        if (distSq > 0.0001 && distSq < minD * minD) {
-          const dist = Math.sqrt(distSq);
-          const nx = dx / dist;
-          const ny = dy / dist;
-          // Separate so they don't sink into each other
-          const overlap = (minD - dist) / 2;
-          a.x -= nx * overlap;
-          a.y -= ny * overlap;
-          c.x += nx * overlap;
-          c.y += ny * overlap;
-          // Swap velocity along the collision normal (equal-mass elastic)
-          const va = a.vx * nx + a.vy * ny;
-          const vc = c.vx * nx + c.vy * ny;
-          const diff = vc - va;
-          a.vx += nx * diff;
-          a.vy += ny * diff;
-          c.vx -= nx * diff;
-          c.vy -= ny * diff;
-          // Add a touch of spin from the impact for visual flavor
-          a.rotVel += (rand(i * j + 1) - 0.5) * 80;
-          c.rotVel -= (rand(i * j + 2) - 0.5) * 80;
+      // Pairwise elastic collisions (O(N²) — fine up to ~150 balls)
+      for (let i = 0; i < N; i++) {
+        const a = balls[i];
+        for (let j = i + 1; j < N; j++) {
+          const c = balls[j];
+          const dx = c.x - a.x;
+          const dy = c.y - a.y;
+          const distSq = dx * dx + dy * dy;
+          const minD = 2 * r;
+          if (distSq > 0.0001 && distSq < minD * minD) {
+            const dist = Math.sqrt(distSq);
+            const nx = dx / dist;
+            const ny = dy / dist;
+            // Separate so they don't sink into each other
+            const overlap = (minD - dist) / 2;
+            a.x -= nx * overlap;
+            a.y -= ny * overlap;
+            c.x += nx * overlap;
+            c.y += ny * overlap;
+            // Swap velocity along the collision normal (equal-mass elastic)
+            const va = a.vx * nx + a.vy * ny;
+            const vc = c.vx * nx + c.vy * ny;
+            const diff = vc - va;
+            a.vx += nx * diff;
+            a.vy += ny * diff;
+            c.vx -= nx * diff;
+            c.vy -= ny * diff;
+            // Add a touch of spin from the impact for visual flavor
+            a.rotVel += (rand(i * j + 1) - 0.5) * 200;
+            c.rotVel -= (rand(i * j + 2) - 0.5) * 200;
+          }
         }
       }
     }
@@ -255,12 +413,15 @@
     const W = arenaRef.value.clientWidth;
     const H = arenaRef.value.clientHeight;
     const r = ballSize.value / 2;
+    updateHeaderClearance();
+    const minY = getBallTopBoundary(r);
+    const maxY = Math.max(minY, H - r);
     // Clamp positions back inside the new viewport
     for (const b of balls) {
       if (b.x < r) b.x = r;
       if (b.x > W - r) b.x = W - r;
-      if (b.y < r) b.y = r;
-      if (b.y > H - r) b.y = H - r;
+      if (b.y < minY) b.y = minY;
+      if (b.y > maxY) b.y = maxY;
     }
   };
 
@@ -268,6 +429,7 @@
   onMounted(() => {
     // Defer physics init one frame so the arena has its measured size.
     requestAnimationFrame(() => {
+      updateHeaderClearance();
       initPhysics();
       lastT = 0;
       rafId = requestAnimationFrame(step);
@@ -277,7 +439,7 @@
     // Stagger each winner reveal by STAGGER_MS so the audience sees them
     // dropped one at a time. Total run time scales with winner count;
     // App.vue waits for the `done` event instead of a fixed 5s timer.
-    const FLYING_MS = 3000;
+    const FLYING_MS = 4500;
     const STAGGER_MS = 600;
     const POP_MS = 800;
     const TAIL_MS = 1100;
@@ -287,6 +449,13 @@
         phase.value = 'reveal';
       }, FLYING_MS),
     );
+    props.winners.forEach((_, i) => {
+      timers.push(
+        window.setTimeout(() => {
+          playPopSound();
+        }, FLYING_MS + i * STAGGER_MS),
+      );
+    });
     const totalMs =
       FLYING_MS +
       Math.max(0, props.winners.length - 1) * STAGGER_MS +
@@ -303,6 +472,12 @@
     if (rafId) cancelAnimationFrame(rafId);
     window.removeEventListener('resize', onResize);
     timers.forEach((t) => clearTimeout(t));
+    activePopPlayers.forEach((player) => {
+      player.pause();
+      player.src = '';
+      player.load();
+    });
+    activePopPlayers.clear();
   });
 </script>
 
@@ -419,20 +594,6 @@
     object-fit: cover;
   }
 
-  .ball-name {
-    background: #fff;
-    color: #cd0000;
-    border-radius: 100px;
-    padding: 2px 10px;
-    font-size: clamp(11px, 1.4vw, 14px);
-    font-weight: 700;
-    white-space: nowrap;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    max-width: min(160px, 26vw);
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
   /* On reveal, fade balls out at their last physics-set position. We
      don't override transform here — JS keeps whatever it set last so
      the ball doesn't snap to (0,0). */
@@ -443,14 +604,20 @@
 
   .winner-reveal {
     position: absolute;
-    inset: 0;
+    top: var(--winner-reveal-top, 0);
+    right: 0;
+    bottom: 0;
+    left: 0;
     z-index: 30;
     display: flex;
     align-items: center;
+    align-content: center;
     justify-content: center;
     flex-wrap: wrap;
-    gap: clamp(12px, 3vw, 32px);
-    padding: 0 clamp(12px, 3vw, 40px);
+    gap: var(--winner-reveal-gap, clamp(12px, 3vw, 32px));
+    padding: var(--winner-reveal-pad-y, 0)
+      var(--winner-reveal-pad-x, clamp(12px, 3vw, 40px));
+    overflow: hidden;
     pointer-events: none;
   }
 
@@ -458,22 +625,22 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: clamp(6px, 1.4vh, 14px);
+    gap: var(--winner-card-gap, clamp(6px, 1.4vh, 14px));
     width: var(--card-w, 200px);
     animation: drop-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
   }
 
   .winner-avatar {
-    width: clamp(80px, 16vh, 160px);
-    height: clamp(80px, 16vh, 160px);
+    width: var(--winner-avatar-size, clamp(80px, 16vh, 160px));
+    height: var(--winner-avatar-size, clamp(80px, 16vh, 160px));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     font-weight: 800;
-    font-size: clamp(28px, 5vh, 56px);
-    border: 5px solid #fff;
+    font-size: var(--winner-avatar-font-size, clamp(28px, 5vh, 56px));
+    border: var(--winner-avatar-border, 5px) solid #fff;
     box-shadow: 0 0 40px rgba(255, 215, 0, 0.85),
       0 12px 30px rgba(205, 0, 0, 0.35),
       inset 0 -10px 20px rgba(0, 0, 0, 0.18),
@@ -492,8 +659,8 @@
     background: #cd0000;
     color: #fff;
     border-radius: 100px;
-    padding: 6px 22px;
-    font-size: clamp(16px, 2.6vh, 28px);
+    padding: var(--winner-name-py, 6px) var(--winner-name-px, 22px);
+    font-size: var(--winner-name-size, clamp(16px, 2.6vh, 28px));
     font-weight: 800;
     letter-spacing: 0.06em;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
