@@ -49,3 +49,19 @@
 
 1. 標題圖片目前是首頁最上方 banner，位置在 `src/components/InitPage.vue`。
 2. 建議沿用原本圖片比例與版面留白，避免在手機版被裁切。
+
+### 使用 Agent 協助更換標題圖片範例
+
+如果要請 Codex 或 Claude 幫忙改標題圖片，可以直接貼下面這段提示詞。
+
+範例：請 Agent 從頭完成整個標題圖更新流程
+
+```text
+請幫我更新首頁標題圖片。
+新圖片檔案已經放在 src/assets/2027_bn.png。
+請你完成以下事情：
+1. 修改 src/components/InitPage.vue 的 banner 圖片路徑。
+2. 確認畫面在桌機和手機版不會明顯跑版。
+3. 執行 pnpm build 驗證。
+4. 幫我確認是否需要同步調整 package.json 的 version。
+```
