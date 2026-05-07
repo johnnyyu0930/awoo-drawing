@@ -175,10 +175,11 @@
     justify-content: center;
   }
   .banner-img {
-    width: min(1100px, 92vw);
+    max-width: min(1100px, 92vw);
     max-height: 28vh;
+    width: auto;
     height: auto;
-    object-fit: contain;
+    display: block;
     border-radius: clamp(12px, 2vh, 24px);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
   }
