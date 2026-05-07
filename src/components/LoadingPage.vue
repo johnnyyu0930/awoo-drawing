@@ -150,7 +150,7 @@
     const W = arenaRef.value.clientWidth;
     const H = arenaRef.value.clientHeight;
     const r = ballSize.value / 2;
-    const speed = 360; // px/sec
+    const speed = 7200; // px/sec — 20× a calmer 360 baseline, real lottery-machine chaos
     balls.length = 0;
     for (let i = 0; i < props.nameList.length; i++) {
       const angle = rand(i * 5.1 + 0.7) * Math.PI * 2;
@@ -161,7 +161,7 @@
         vx: Math.cos(angle) * sp,
         vy: Math.sin(angle) * sp,
         rot: rand(i * 11.7) * 360,
-        rotVel: (rand(i * 13.9) - 0.5) * 240, // deg/sec
+        rotVel: (rand(i * 13.9) - 0.5) * 720, // deg/sec — also bumped for the speed
       });
     }
   };
@@ -179,62 +179,69 @@
     const r = ballSize.value / 2;
     const N = balls.length;
 
-    // Integrate + bounce off walls
-    for (let i = 0; i < N; i++) {
-      const b = balls[i];
-      b.x += b.vx * dt;
-      b.y += b.vy * dt;
-      b.rot += b.rotVel * dt;
-      if (b.x < r) {
-        b.x = r;
-        b.vx = Math.abs(b.vx);
-        b.rotVel = -b.rotVel;
-      } else if (b.x > W - r) {
-        b.x = W - r;
-        b.vx = -Math.abs(b.vx);
-        b.rotVel = -b.rotVel;
+    // Substep the physics so a 7200 px/s ball can't tunnel through a
+    // 2r-wide neighbor between frames. With 8 substeps each substep
+    // moves at most ~15 px, well under one ball radius.
+    const SUBSTEPS = 8;
+    const sub = dt / SUBSTEPS;
+    for (let s = 0; s < SUBSTEPS; s++) {
+      // Integrate + bounce off walls
+      for (let i = 0; i < N; i++) {
+        const b = balls[i];
+        b.x += b.vx * sub;
+        b.y += b.vy * sub;
+        b.rot += b.rotVel * sub;
+        if (b.x < r) {
+          b.x = r;
+          b.vx = Math.abs(b.vx);
+          b.rotVel = -b.rotVel;
+        } else if (b.x > W - r) {
+          b.x = W - r;
+          b.vx = -Math.abs(b.vx);
+          b.rotVel = -b.rotVel;
+        }
+        if (b.y < r) {
+          b.y = r;
+          b.vy = Math.abs(b.vy);
+          b.rotVel = -b.rotVel;
+        } else if (b.y > H - r) {
+          b.y = H - r;
+          b.vy = -Math.abs(b.vy);
+          b.rotVel = -b.rotVel;
+        }
       }
-      if (b.y < r) {
-        b.y = r;
-        b.vy = Math.abs(b.vy);
-        b.rotVel = -b.rotVel;
-      } else if (b.y > H - r) {
-        b.y = H - r;
-        b.vy = -Math.abs(b.vy);
-        b.rotVel = -b.rotVel;
-      }
-    }
 
-    // Pairwise elastic collisions (O(N²) — fine up to ~150 balls)
-    for (let i = 0; i < N; i++) {
-      const a = balls[i];
-      for (let j = i + 1; j < N; j++) {
-        const c = balls[j];
-        const dx = c.x - a.x;
-        const dy = c.y - a.y;
-        const distSq = dx * dx + dy * dy;
-        const minD = 2 * r;
-        if (distSq > 0.0001 && distSq < minD * minD) {
-          const dist = Math.sqrt(distSq);
-          const nx = dx / dist;
-          const ny = dy / dist;
-          // Separate so they don't sink into each other
-          const overlap = (minD - dist) / 2;
-          a.x -= nx * overlap;
-          a.y -= ny * overlap;
-          c.x += nx * overlap;
-          c.y += ny * overlap;
-          // Swap velocity along the collision normal (equal-mass elastic)
-          const va = a.vx * nx + a.vy * ny;
-          const vc = c.vx * nx + c.vy * ny;
-          const diff = vc - va;
-          a.vx += nx * diff;
-          a.vy += ny * diff;
-          c.vx -= nx * diff;
-          c.vy -= ny * diff;
-          // Add a touch of spin from the impact for visual flavor
-          a.rotVel += (rand(i * j + 1) - 0.5) * 80;
-          c.rotVel -= (rand(i * j + 2) - 0.5) * 80;
+      // Pairwise elastic collisions (O(N²) — fine up to ~150 balls)
+      for (let i = 0; i < N; i++) {
+        const a = balls[i];
+        for (let j = i + 1; j < N; j++) {
+          const c = balls[j];
+          const dx = c.x - a.x;
+          const dy = c.y - a.y;
+          const distSq = dx * dx + dy * dy;
+          const minD = 2 * r;
+          if (distSq > 0.0001 && distSq < minD * minD) {
+            const dist = Math.sqrt(distSq);
+            const nx = dx / dist;
+            const ny = dy / dist;
+            // Separate so they don't sink into each other
+            const overlap = (minD - dist) / 2;
+            a.x -= nx * overlap;
+            a.y -= ny * overlap;
+            c.x += nx * overlap;
+            c.y += ny * overlap;
+            // Swap velocity along the collision normal (equal-mass elastic)
+            const va = a.vx * nx + a.vy * ny;
+            const vc = c.vx * nx + c.vy * ny;
+            const diff = vc - va;
+            a.vx += nx * diff;
+            a.vy += ny * diff;
+            c.vx -= nx * diff;
+            c.vy -= ny * diff;
+            // Add a touch of spin from the impact for visual flavor
+            a.rotVel += (rand(i * j + 1) - 0.5) * 200;
+            c.rotVel -= (rand(i * j + 2) - 0.5) * 200;
+          }
         }
       }
     }
